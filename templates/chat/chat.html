@@ -1,0 +1,354 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Meta Tags and Title -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1, shrink-to-fit=no, viewport-fit=cover">
+    <meta name="color-scheme" content="light dark">
+    <title>Custom Chat with Gaabshiine!</title>
+
+    <!-- Favicon and Fonts -->
+    <link rel="shortcut icon" href="{% static 'chat/assets/img/logo/my_logo-white-green.png' %}" type="image/x-icon">
+    <link rel="preconnect" href="https://fonts.gstatic.com/">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700" rel="stylesheet">
+
+    <!-- Template CSS -->
+    <link class="css-lt" rel="stylesheet" href="{% static 'chat/assets/css/template.bundle.css' %}" media="(prefers-color-scheme: light)">
+    <link class="css-dk" rel="stylesheet" href="{% static 'chat/assets/css/template.dark.bundle.css' %}" media="(prefers-color-scheme: dark)">
+
+    <!-- Theme Mode Script -->
+    <script>
+        function setTheme(mode) {
+            localStorage.setItem('color-scheme', mode);
+            const LTCSS = document.querySelectorAll('link[class=css-lt]');
+            const DKCSS = document.querySelectorAll('link[class=css-dk]');
+            document.getElementById("dark-icon").style.display = mode === "dark" ? "block" : "none";
+            document.getElementById("light-icon").style.display = mode === "light" ? "block" : "none";
+            
+            // Update the logo based on the theme
+            const logo = document.getElementById("logo-image");
+            logo.src = mode === "dark" 
+                ? "{% static 'chat/assets/img/logo/white-blance.png' %}" 
+                : "{% static 'chat/assets/img/logo/my_logo-white-green.png' %}";
+            
+            // Update switcher icon color in dark mode
+            const switcherIcon = document.querySelector('.switcher-btn svg');
+            switcherIcon.style.stroke = mode === "dark" ? "#a3e5cf" : ""; // Reset for light mode
+        
+            // Change the color of "Edit" buttons based on the theme
+            const editButtons = document.querySelectorAll('.btn-link');
+            editButtons.forEach(button => {
+                button.style.color = mode === "dark" ? "#a3e5cf" : ""; // Reset for light mode
+            });
+        
+            // Change the background color of .message-out .message-text based on the theme
+            const messageOutText = document.querySelectorAll('.message-out .message-text');
+            messageOutText.forEach(text => {
+                text.style.backgroundColor = mode === "dark" ? "#255142" : ""; // Reset for light mode
+            });
+    
+            // Change background color of send button in dark mode
+            const sendButton = document.querySelector('.btn.btn-icon.btn-primary.rounded-circle.ms-5');
+            sendButton.style.backgroundColor = mode === "dark" ? "#255142" : ""; // Reset for light mode
+        
+            // Apply media settings for theme-specific stylesheets
+            [...LTCSS].forEach(link => { link.media = (mode === 'light') ? 'all' : 'not all'; });
+            [...DKCSS].forEach(link => { link.media = (mode === 'dark') ? 'all' : 'not all'; });
+        }
+        
+        // Initialize theme based on localStorage
+        window.addEventListener("DOMContentLoaded", () => {
+            const initialTheme = localStorage.getItem('color-scheme') || 'light';
+            setTheme(initialTheme);
+        });
+    </script>
+</head>
+
+<body>
+    <!-- Layout -->
+    <div class="layout overflow-hidden">
+        <nav class="navigation d-flex flex-column text-center navbar navbar-light hide-scrollbar">
+            <a href="#" title="Messenger" class="d-none d-xl-block mb-6">
+                <img id="logo-image" src="{% static 'chat/assets/img/logo/my_logo-white-green.png' %}" alt="Messenger" height="60px" width="60px" style="margin-top: 50px;">
+            </a>
+            
+
+            <ul class="d-flex nav navbar-nav flex-row flex-xl-column flex-grow-1 w-100 py-4 py-lg-2 px-lg-3" role="tablist">
+                <li class="nav-item d-none d-xl-block">
+                    <a class="switcher-btn nav-link py-0 py-lg-8" href="#!" title="Themes" onclick="toggleTheme()">
+                        <div id="dark-icon" class="switcher-icon icon icon-xl" data-theme-mode="dark" style="display: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-moon">
+                                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                            </svg>
+                        </div>
+                        <div id="light-icon" class="switcher-icon icon icon-xl" data-theme-mode="light" style="display: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-sun">
+                                <circle cx="12" cy="12" r="5"></circle>
+                                <line x1="12" y1="1" x2="12" y2="3"></line>
+                                <line x1="12" y1="21" x2="12" y2="23"></line>
+                                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                                <line x1="1" y1="12" x2="3" y2="12"></line>
+                                <line x1="21" y1="12" x2="23" y2="12"></line>
+                                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                            </svg>
+                        </div>
+                    </a>
+                </li> 
+                <li class="nav-item d-none d-xl-block">
+                    <button class="btn btn-danger mt-4" onclick="deleteAllChats()">Delete All Chats</button>
+                </li>
+            </ul>
+        </nav>
+
+        <main class="main is-visible" data-dropzone-area="">
+            <div class="container h-100">
+                <div class="d-flex flex-column h-100 position-relative">
+                    <div class="chat-header border-bottom py-4 py-lg-7">
+                        <div class="row align-items-center">
+                            <div class="col-2 d-xl-none">
+                                <a class="icon icon-lg text-muted" href="#" data-toggle-chat="">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-left"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-body hide-scrollbar flex-1 h-100">
+                        <div class="chat-body-inner">
+                            <div id="chat-container" class="py-6 py-lg-12">
+                                {% for chat in chats %}
+                                    <div class="message" data-id="{{ chat.id }}">
+                                        <div class="message-inner">
+                                            <div class="message-body">
+                                                <div class="message-content">
+                                                    <div class="message-text">
+                                                        <p>{{ chat.question }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="message-footer">
+                                                <span class="extra-small text-muted">{{ chat.timestamp|date:"h:i A" }}</span>
+                                                <button class="btn btn-link btn-sm" onclick="editChat({{ chat.id }}, '{{ chat.question }}')">Edit</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="message message-out" data-id="{{ chat.id }}">
+                                        <div class="message-inner">
+                                            <div class="message-body">
+                                                <div class="message-content">
+                                                    <div class="message-text">
+                                                        <p>{{ chat.answer }}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="message-footer">
+                                                <span class="extra-small text-muted">{{ chat.timestamp|date:"h:i A" }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="chat-footer pb-3 pb-lg-7 position-absolute bottom-0 start-0">
+                        <form id="chat-form" class="chat-form rounded-pill bg-dark">
+                            {% csrf_token %}
+                            <div class="row align-items-center gx-0">
+                                <div class="col">
+                                    <div class="input-group">
+                                        <textarea id="question-input" name="question" class="form-control px-0" placeholder="Type your question..." rows="1" style="text-indent: 20px; resize: none;" ></textarea>
+                                    </div>
+                                    
+                                    
+                                </div>
+                                <div class="col-auto">
+                                    <button type="submit" class="btn btn-icon btn-primary rounded-circle ms-5">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-send"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                                    </button>
+                                    
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- JavaScript to handle AJAX form submission and format timestamp -->
+    <script src="{% static 'chat/assets/js/vendor.js' %}"></script>
+    <script src="{% static 'chat/assets/js/template.js' %}"></script>
+    <script>
+        function toggleTheme() {
+            const currentTheme = localStorage.getItem('color-scheme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            setTheme(newTheme);
+        }
+
+        // Fetch current system time
+        function getCurrentFormattedTime() {
+            const date = new Date();
+            const hours = date.getHours() % 12 || 12;
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            const ampm = date.getHours() >= 12 ? 'PM' : 'AM';
+            return `${hours}:${minutes} ${ampm}`;
+        }
+
+        function deleteAllChats() {
+            fetch("{% url 'delete_all_chats' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Clear all messages from the chat container
+                    document.getElementById("chat-container").innerHTML = "";
+                } else {
+                    alert("Failed to delete all chats. Please try again.");
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        }
+        
+        // Edit Chat Function
+        function editChat(chatId, oldQuestion) {
+            const newQuestion = prompt("Edit your question:", oldQuestion);
+            if (newQuestion && newQuestion !== oldQuestion) {
+                fetch(`/chat/edit_chat/${chatId}/`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify({ "question": newQuestion })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const questionElement = document.querySelector(`.message[data-id='${chatId}'] .message-text p`);
+                        if (questionElement) {
+                            questionElement.innerText = newQuestion;
+                        }
+                        const answerElement = document.querySelector(`.message-out[data-id='${chatId}'] .message-text p`);
+                        if (answerElement) {
+                            answerElement.innerText = data.answer;
+                        }
+                    } else {
+                        alert("Failed to update the chat. Please try again.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            }
+        }
+
+        // Typing Effect Function for Gradual Display
+        function typeText(text, elementId) {
+            const element = document.getElementById(elementId);
+            element.innerHTML = ""; // Clear any previous text content
+            let i = 0;
+            const interval = setInterval(() => {
+                if (i < text.length) {
+                    element.innerHTML += text.charAt(i);
+                    i++;
+                } else {
+                    clearInterval(interval);
+                }
+            }, 50); // Adjust typing speed here
+        }
+
+        // Append New Messages with Typing Indicator and Typing Effect
+        function appendMessageToChatContainer(question, answer, chatId) {
+            const chatContainer = document.getElementById("chat-container");
+            const currentFormattedTime = getCurrentFormattedTime();
+
+            // Add Question Message
+            const questionMessage = document.createElement("div");
+            questionMessage.classList.add("message");
+            questionMessage.setAttribute("data-id", chatId);
+            questionMessage.innerHTML = `
+                <div class="message-inner">
+                    <div class="message-body">
+                        <div class="message-content">
+                            <div class="message-text">
+                                <p>${question}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message-footer">
+                        <span class="extra-small text-muted">${currentFormattedTime}</span>
+                        <a href="javascript:void(0);" class="btn btn-link btn-sm" onclick="editChat(${chatId}, '${question}')">Edit</a>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(questionMessage);
+
+            // Add Answer Message with Typing Indicator
+            const answerMessage = document.createElement("div");
+            answerMessage.classList.add("message", "message-out");
+            answerMessage.setAttribute("data-id", `answer-${chatId}`);
+            answerMessage.innerHTML = `
+                <div class="message-inner">
+                    <div class="message-body">
+                        <div class="message-content">
+                            <div class="message-text">
+                                <span id="typing-indicator-${chatId}" class="typing-dots">
+                                    <span>.</span><span>.</span><span>.</span>
+                                </span>
+                                <p id="answer-text-${chatId}" style="display: none;"></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="message-footer">
+                        <span class="extra-small text-muted">${currentFormattedTime}</span>
+                    </div>
+                </div>
+            `;
+            chatContainer.appendChild(answerMessage);
+
+            // Scroll to the latest message
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Show typing indicator, then apply typing effect for answer
+            setTimeout(() => {
+                document.getElementById(`typing-indicator-${chatId}`).style.display = "none";
+                const answerTextElement = document.getElementById(`answer-text-${chatId}`);
+                answerTextElement.style.display = "block";
+                typeText(answer, `answer-text-${chatId}`);
+            }, 1000); // Delay for typing indicator (adjust as needed)
+            
+        }
+
+        // Submit Form and Add Message with Typing Effect
+        document.getElementById("chat-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            const question = document.getElementById("question-input").value;
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch("{% url 'chat' %}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                    "X-CSRFToken": csrfToken
+                },
+                body: new URLSearchParams({ "question": question })
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("question-input").value = ""; // Clear input
+                appendMessageToChatContainer(data.question, data.answer, data.chat_id); // Add new question and answer
+
+                
+            })
+            .catch(error => console.error("Error:", error));
+        });
+
+    </script>
+</body>
+</html>
